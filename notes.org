@@ -1,0 +1,101 @@
+#+TITLE: Simple High-level Language for Forth
+#+AUTHOR: Tikhon Jelvis
+
+* Forth-hll
+  - a high-level (but not *that* high-level) language that gets
+    trivially compiled down to arrayForth.
+
+** Deep EDSL
+   - deeply embed into a nice host language
+     - host language then used for metaprogramming
+     - this makes adding new syntax and such trivial
+   - easier to implement: simple semantics, no parser
+   - deep vs shallow:
+     - deep helps separate hll semantics from host semantics
+     - easier to add other tools like pretty printing, verification or
+       interpretation
+     - more fun
+   - with a deep embedding, I can always add a custom front-end if
+     people are unhappy with the host language
+     - parsing is easy but sometimes tedious
+
+** Design
+*** Variables
+    - variables represent stack elements (rather than memory
+      locations, for example)
+      - they get read off the stack in the order they are defined
+      - or: have no variables, wrap everything in function
+        - order of arguments defines order on stack
+        - return multiple values for multiple stack positions
+        - simplifies recursion and stuff
+        - could make composing programs easier
+    - maybe sometimes use variable in register (like a or b or the
+      return stack)?
+      - the b register seems difficult to use for anything except
+        accessing memory
+    - maybe allow direct access to registers a and b separately from
+      normal variables?
+    - could also have temporary variables
+    - figure out appropriate stack manipulation (like dup, over,
+      drop...) automatically based on how variables are used
+*** Recursion
+    - supporting at least simple tail recursion would be nice
+    - needs some sort of function definition
+*** Arrays
+    - unify memory locations and arrays
+    - no variables in memory: just one-element arrays
+      - we can always trivially add syntax sugar to make it *look*
+        like in-memory variables
+    - statically known size
+      - easy loop over array
+      - dynamic allocation might be tricky
+    - abstract over location
+    - maybe support pointer arithmetic?
+    - maybe encode size and bounds in type system?
+*** Statements
+    - everything is an expression, everything has a value
+      - at the end, the value of the expression is what is left on the
+        stack
+      - significantly simplifies the language--the divide between
+        statements and expressions is rather arbitrary anyhow
+      - expressions with no value can just propagate what was on the
+        stack before they got evaluated
+    - how to deal with returning multiple values? 
+      - I have no idea
+      - maybe support some sort of tuple-like syntax just for
+        returning, and put things onto the stack in the order they
+        appear in the tuple?
+*** If
+    - implement with if and -if as appropriate
+    - should be simple
+    - returns the value of the appropriate branch
+      - in the one-branch case, returns either the value of the branch
+        or the previous value on the stack
+*** Loops
+    - also an expression: probably return value of last iteration
+      - would returning something else make more sense?
+    - for
+      - always use r as counter?
+      - nesting is difficult, so don't
+      - probably implement with next
+        - do unext if possible?
+    - while
+      - probably implement with if and -if
+    - map
+      - provide some nice facilities for working with arrays
+      - number of iterations known statically from array size
+        - can be unrolled if necessary
+      - maybe a Perl-style map with dynamically scoped variables like
+        $a? Everybody loves Perl, after all.
+*** Return stack
+    - I am not sure how to use or give access to the return stack
+      - it could be used for auxiliary storage and control flow
+      - it should probably not be used *too* much--it's already needed
+        to deal with different words and the like
+*** Ports and IO
+    - not supported in the short-term
+
+** Compilation
+   - probably target F18A rather than full arrayForth
+     - simpler semantics, no nonsense with colors and ]
+   - can retarget to full arrayForth fairly easily
