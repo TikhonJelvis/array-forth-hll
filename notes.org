@@ -74,7 +74,10 @@
 *** Loops
     - also an expression: probably return value of last iteration
       - would returning something else make more sense?
-    - for
+    - all loops would accept a block of code
+      - perhaps even accept a function, with some well-defined order
+        to pass in arguments?
+    - for (maybe call repeat?)
       - always use r as counter?
       - nesting is difficult, so don't
       - probably implement with next
@@ -87,6 +90,9 @@
         - can be unrolled if necessary
       - maybe a Perl-style map with dynamically scoped variables like
         $a? Everybody loves Perl, after all.
+    - fold
+      - always go from array to number
+      - stick to one direction (probably left)
 *** Return stack
     - I am not sure how to use or give access to the return stack
       - it could be used for auxiliary storage and control flow
@@ -94,8 +100,15 @@
         to deal with different words and the like
 *** Ports and IO
     - not supported in the short-term
+*** Sketches
+    - perhaps later: add some sort of support for holes in the program
+    - maybe add some macros like Sketch's repeat
+      - could easily be done at host language level
 
 ** Compilation
    - probably target F18A rather than full arrayForth
      - simpler semantics, no nonsense with colors and ]
-   - can retarget to full arrayForth fairly easily
+   - can re-target to full arrayForth fairly easily
+     - are there any actual advantages to full arrayForth
+       - inter-operation with existing arrayForth code?
+       - fancy features of Rohin's compiler? (does it have any?)
