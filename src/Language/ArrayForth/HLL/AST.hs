@@ -10,12 +10,13 @@ import qualified Prelude
 
 import           Control.Monad.Free
 
+import           Data.String
+
 import           Language.ArrayForth.Opcode (F18Word)
 
 data Expr = Num F18Word          
           | ArrayRef String      
-          | Array [F18Word]      
-          | Variable String      
+          | Array String [F18Word] 
           | Nil                  
           | Op Operator AST AST  
           | UOp UOperator AST    
@@ -30,9 +31,9 @@ data Forth next = Forth Expr next deriving (Functor, Show)
 
 type AST = Free Forth ()
 
-data Operator = Add | Sub | Mul | Lt | Gt | LtE | GtE | Eq | NEq deriving (Show, Prelude.Eq)
+data Operator = Add | Sub | Mul | Lt | Gt | LtE | GtE | Eq | NEq | Set deriving (Show, Prelude.Eq)
 
-data UOperator = Neg | Not deriving Show
+data UOperator = Neg | Not | Get deriving Show
 
 liftExpr :: Expr -> AST
 liftExpr expr = liftF $ Forth expr ()
@@ -50,7 +51,10 @@ instance Num AST where
   abs = undefined
   signum = undefined
   
-(<), (>), (<=), (≤), (>=), (≥), (==), (/=), (≠) :: AST -> AST -> AST
+instance IsString AST where
+  fromString = ref
+
+(<), (>), (<=), (≤), (>=), (≥), (==), (/=), (≠), (!) :: AST -> AST -> AST
 (<) = op Lt
 (>) = op Gt
 (<=) = op LtE
@@ -60,15 +64,18 @@ instance Num AST where
 (==) = op Eq
 (/=) = op NEq
 (≠) = (/=)
+(!) = (+)
+(=:) = op Set
 
-not :: AST -> AST
+not, val :: AST -> AST
 not = liftExpr . UOp Not
+val = liftExpr . UOp Get
 
 ifThenElse :: AST -> AST -> AST -> AST
 ifThenElse cond e₁ e₂ = liftExpr $ If cond e₁ e₂
 
-a :: [F18Word] -> AST
-a = liftExpr . Array
+array :: String -> [F18Word] -> AST
+array name values = liftExpr $ Array name values
 
 nil :: AST
 nil = liftExpr Nil
@@ -86,7 +93,4 @@ fold :: AST -> AST -> AST -> AST -> AST
 fold var₁ var₂ array body = liftExpr $ Fold var₁ var₂ array body
 
 ref :: String -> AST
-ref name = liftExpr $ Variable name
-
-aRef :: String -> AST
-aRef name = liftExpr $ ArrayRef name
+ref name = liftExpr $ ArrayRef name

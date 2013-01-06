@@ -14,3 +14,4 @@ operate stack@Stack {dataS = d:ds, retS = r:rs, a} opr = case opr of
   Pop   -> stack { dataS = r:d:ds, retS = rs }
   ToA   -> stack { dataS = ds, a = d }
   FromA -> stack { dataS = a:d:ds }
+  
