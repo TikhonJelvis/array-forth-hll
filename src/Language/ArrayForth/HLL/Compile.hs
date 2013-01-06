@@ -3,12 +3,13 @@
 module Language.ArrayForth.HLL.Compile where
 
 import           Control.Applicative         ((<$), (<$>), (<*), (<*>))
+import           Control.Arrow               (second)
 import           Control.Monad.Free          (Free (..))
 import           Control.Monad.State
 
 import           Data.List                   (genericLength)
 
-import Debug.Trace (trace)
+import           Debug.Trace                 (trace)
 
 import qualified Language.ArrayForth.Opcode  as OP
 import qualified Language.ArrayForth.Program as AF
@@ -34,8 +35,8 @@ addArray name values = do state@St { vars, startData } <- get
                                                 , startData = startData ++ values }
                             Just{}  -> return ()
 
-compile :: AST -> AF.Program
-compile ast = evalState (compileAST ast) $ St 0 [] []
+compile :: AST -> (AF.Program, [OP.F18Word])
+compile ast = second startData . runState (compileAST ast) $ St 0 [] []
   where compileAST (Pure _)                 = return []
         compileAST (Free (Forth expr next)) = (++) <$> go expr <*> compileAST next
           where jump opcode label = AF.Jump opcode $ AF.Abstract label
