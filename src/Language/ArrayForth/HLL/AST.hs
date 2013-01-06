@@ -54,7 +54,7 @@ instance Num AST where
 instance IsString AST where
   fromString = ref
 
-(<), (>), (<=), (≤), (>=), (≥), (==), (/=), (≠), (!) :: AST -> AST -> AST
+(<), (>), (<=), (≤), (>=), (≥), (==), (/=), (≠), (!), (=:) :: AST -> AST -> AST
 (<) = op Lt
 (>) = op Gt
 (<=) = op LtE
@@ -87,10 +87,10 @@ while :: AST -> AST -> AST
 while cond body = liftExpr $ While cond body
 
 map :: AST -> AST -> AST -> AST
-map var array body = liftExpr $ Map var array body
+map var arr body = liftExpr $ Map var arr body
 
 fold :: AST -> AST -> AST -> AST -> AST
-fold var₁ var₂ array body = liftExpr $ Fold var₁ var₂ array body
+fold var₁ var₂ arr body = liftExpr $ Fold var₁ var₂ arr body
 
 ref :: String -> AST
 ref name = liftExpr $ ArrayRef name

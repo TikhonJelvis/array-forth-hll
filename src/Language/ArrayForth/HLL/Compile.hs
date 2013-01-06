@@ -5,11 +5,9 @@ module Language.ArrayForth.HLL.Compile where
 import           Control.Applicative         ((<$), (<$>), (<*), (<*>))
 import           Control.Arrow               (second)
 import           Control.Monad.Free          (Free (..))
-import           Control.Monad.State
+import           Control.Monad.State         (State, get, gets, modify, put, runState)
 
 import           Data.List                   (genericLength)
-
-import           Debug.Trace                 (trace)
 
 import qualified Language.ArrayForth.Opcode  as OP
 import qualified Language.ArrayForth.Program as AF
@@ -40,17 +38,17 @@ compile ast = second startData . runState (compileAST ast) $ St 0 [] []
   where compileAST (Pure _)                 = return []
         compileAST (Free (Forth expr next)) = (++) <$> go expr <*> compileAST next
           where jump opcode label = AF.Jump opcode $ AF.Abstract label
-                name = (show <$> gets counter) <* modify nextName
+                labelName = (show <$> gets counter) <* modify nextName
 
                 go (Num n) = return [num n]
                 go Nil = return []
-                go expr@(Op Set aRef value) =
+                go (Op Set aRef value) =
                   do let Free (Forth (ArrayRef name) (Pure ())) = aRef
-                     st@St { vars } <- get
+                     St { vars } <- get
+                     let prog addr v = AF.Number addr : "b!" ++ v ++ "!b"
                      case lookup name vars of
-                       Just addr -> do value' <- compileAST value
-                                       return $ AF.Number addr : "b!" ++ value' ++ "!b"
-                       Nothing -> addArray name [0] >> go expr
+                       Just addr -> prog addr <$> compileAST value
+                       Nothing   -> addArray name [0] >> go expr
                 go (Op opr e1 e2) = do e1' <- compileAST e1
                                        e2' <- compileAST e2
                                        return $ e1' ++ e2' ++ operator opr
@@ -60,8 +58,8 @@ compile ast = second startData . runState (compileAST ast) $ St 0 [] []
                   do cond' <- compileAST cond
                      e1' <- compileAST e1
                      e2' <- compileAST e2
-                     end <- name
-                     yes <- name
+                     end <- labelName
+                     yes <- labelName
                      let ifInstr = [if minusIf cond then jump OP.MinusIf yes else jump OP.If yes]
                      return $ cond' ++ ifInstr ++ e2' ++ [jump OP.Jmp end, AF.Label yes] ++
                        e1' ++ [AF.Label end]
@@ -70,6 +68,7 @@ compile ast = second startData . runState (compileAST ast) $ St 0 [] []
                                         case addr of
                                           Just a -> return $ [AF.Number a]
                                           Nothing -> error $ "Unknown variable " ++ name
+                go _ = error "Not implemented yet. Sorry!"
 
                 operator Add = "+"
                 operator Sub = "- 1 + +"

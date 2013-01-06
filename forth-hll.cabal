@@ -41,9 +41,14 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
+source-repository head
+  type:           git
+  location:       git://github.com/TikhonJelvis/array-forth-hll.git
+
 Library
-  Build-depends:     base
+  Build-depends:     base, array-forth ==0.2.*, free ==3.*, mtl >=2
   Hs-source-dirs:    src
   Exposed-modules:   Language.ArrayForth.HLL.AST,
-                     Language.ArrayForth.HLL.Compile
-  GHC-options:       -Wall -fno-warn-unused-do-bind -rtsopts -O2
+                     Language.ArrayForth.HLL.Compile,
+                     Language.ArrayForth.HLL.Example
+  GHC-options:       -Wall -fno-warn-unused-do-bind -rtsopts
