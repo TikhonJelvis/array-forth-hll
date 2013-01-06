@@ -44,4 +44,6 @@ cabal-version:       >=1.8
 Library
   Build-depends:     base
   Hs-source-dirs:    src
+  Exposed-modules:   Language.ArrayForth.HLL.AST,
+                     Language.ArrayForth.HLL.Compile
   GHC-options:       -Wall -fno-warn-unused-do-bind -rtsopts -O2
