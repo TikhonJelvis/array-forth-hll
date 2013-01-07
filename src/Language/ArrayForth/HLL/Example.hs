@@ -23,7 +23,7 @@ compiledToNative (program, memory) = fmap Constant memory ++ toNative program
 -- A simple example program. This shows how to use variables,
 -- arithmetic and if statements.
 test :: AST
-test = do "a" =: 1
+test = do "a" =: 10
           "b" =: 2
           "c" =: "a" + "b"
           if "c" == 3 then "d" =: 3 else "d" =: 4
@@ -41,8 +41,16 @@ when cond expr = if cond then expr else nil
 
 -- This is how you would use the new "when" construct:
 testWhen :: AST
-testWhen = do "a" =: 10
-              when ("a" > 5) $ "a" =: (- "a")
+testWhen = "a" =: 10 >> "i" =: 0 >> (when ("a" > 5) $ do "a" =: (- "a")
+                                                         "i" =: ("i" + 1))
+
+testFoo :: AST
+testFoo = do "input" =: 10
+             "x" =: "input" - 2
+             "count" =: 0
+             when ("x" > 0) $
+               do "x" =: "x" - 3
+                  "count" =: "count" + 1
 
 asNative :: AST -> NativeProgram
 asNative = compiledToNative . compile 

@@ -67,6 +67,10 @@ instance IsString AST where
 (!) = op Index
 (=:) = op Set
 
+infix 3 =:
+infix 4 <, >, <=, >=, ≤, ≥, ==, /=, ≠
+infix 8 !
+
 not :: AST -> AST
 not = liftExpr . UOp Not
 
