@@ -18,11 +18,11 @@ compiledToNative :: (Program, [F18Word]) -> NativeProgram
 compiledToNative (program, memory) = fmap Constant memory ++ toNative program
 
 test :: AST
-test = do "a" =: 10
-          if "a" > 2 then 1 + 2 else 2 + 3
+test = do "foo" =: 10
+          "foo" > 10
 
 asNative :: NativeProgram
 asNative = compiledToNative $ compile test
 
 asBits :: [F18Word]
-asBits = fmap toBits $ asNative
+asBits = fmap toBits asNative

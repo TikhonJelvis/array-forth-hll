@@ -31,9 +31,9 @@ data Forth next = Forth Expr next deriving (Functor, Show)
 
 type AST = Free Forth ()
 
-data Operator = Add | Sub | Mul | Lt | Gt | LtE | GtE | Eq | NEq | Set deriving (Show, Prelude.Eq)
+data Operator = Add | Sub | Mul | Lt | Gt | LtE | GtE | Eq | NEq | Set | Index deriving (Show, Prelude.Eq)
 
-data UOperator = Neg | Not | Get deriving Show
+data UOperator = Neg | Not deriving Show
 
 liftExpr :: Expr -> AST
 liftExpr expr = liftF $ Forth expr ()
@@ -64,12 +64,11 @@ instance IsString AST where
 (==) = op Eq
 (/=) = op NEq
 (≠) = (/=)
-(!) = (+)
+(!) = op Index
 (=:) = op Set
 
-not, val :: AST -> AST
+not :: AST -> AST
 not = liftExpr . UOp Not
-val = liftExpr . UOp Get
 
 ifThenElse :: AST -> AST -> AST -> AST
 ifThenElse cond e₁ e₂ = liftExpr $ If cond e₁ e₂
