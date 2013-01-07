@@ -18,8 +18,13 @@ compiledToNative :: (Program, [F18Word]) -> NativeProgram
 compiledToNative (program, memory) = fmap Constant memory ++ toNative program
 
 test :: AST
-test = do "foo" =: 10
-          "foo" > 10
+test = do "a" =: 1
+          "b" =: 2
+          if "a" > "b" then "c" =: 3 else "c" =: 4
+
+-- You can add language "constructs" pretty easily.
+when :: AST -> AST -> AST
+when cond expr = if cond then expr else nil
 
 asNative :: NativeProgram
 asNative = compiledToNative $ compile test
