@@ -2,20 +2,35 @@
 {-# LANGUAGE RebindableSyntax  #-}
 module Language.ArrayForth.HLL.Example where
 
-import           Prelude                           hiding (Eq (..), Ord (..), map)
+import           Prelude                           hiding (Eq (..), Ord (..),
+                                                    map)
 
+import           Data.Functor                      ((<$>))
+import           Data.List                         (genericLength)
 import           Data.String                       (IsString (..))
 
+import           Language.ArrayForth.Interpreter   (runNativeProgram)
 import           Language.ArrayForth.NativeProgram (Instrs (Constant),
                                                     NativeProgram, toBits)
 import           Language.ArrayForth.Opcode        (F18Word)
 import           Language.ArrayForth.Program       (Program, toNative)
+import           Language.ArrayForth.State         (State (..), startState)
 
 import           Language.ArrayForth.HLL.AST
 import           Language.ArrayForth.HLL.Compile
 
 compiledToNative :: (Program, [F18Word]) -> NativeProgram
-compiledToNative (program, memory) = fmap Constant memory ++ toNative program
+compiledToNative (program, memory) = (Constant <$> memory) ++ toNative program
+
+asNative :: AST -> NativeProgram
+asNative = compiledToNative . compile
+
+asBits :: AST -> [F18Word]
+asBits = fmap toBits . asNative
+
+run :: AST -> State
+run ast = runNativeProgram (startState { p = genericLength mem }) $ compiledToNative full
+  where full@(prog, mem) = compile ast
 
 -- You can look at any AST as a native program using `asNative ast'
 -- You can also use `asBits ast'
@@ -52,8 +67,8 @@ testFoo = do "input" =: 10
                do "x" =: "x" - 3
                   "count" =: "count" + 1
 
-asNative :: AST -> NativeProgram
-asNative = compiledToNative . compile 
-
-asBits :: AST -> [F18Word]
-asBits = fmap toBits . asNative
+testDiv = do "input" =: 10
+             "x" =: "input" - 2
+             "count" =: 0
+             when ("x" > 0) $ do "x" =: "x" - 3
+                                 "count" =: "count" + 1
